@@ -4,97 +4,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>List of Drivers</title>
-    <!-- Tailwind CSS -->
+    <title>List Drivers</title>
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 </head>
 <body class="bg-gray-200 min-h-screen flex flex-col items-center p-4">
-    <!-- Title Section -->
-    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Driver Management</h1>
+
+    <!-- Page Title -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">List of Drivers</h1>
     </div>
 
-    <!-- Driver List Table -->
-    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl">
-        <form id="deleteDriversForm">
-            <!-- Table -->
-            <table class="w-full text-left border-collapse">
+    <!-- Driver List -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl mt-4">
+        <form id="driverListForm" method="post" action="{% url 'delete_drivers' %}">
+            {% csrf_token %}
+            <table class="table-auto w-full border-collapse">
                 <thead>
-                    <tr class="border-b">
-                        <th class="py-3 px-4"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
-                        <th class="py-3 px-4">First Name</th>
-                        <th class="py-3 px-4">Last Name</th>
-                        <th class="py-3 px-4">Email</th>
-                        <th class="py-3 px-4">Phone Number</th>
+                    <tr class="bg-gray-100">
+                        <th class="border px-4 py-2">Select</th>
+                        <th class="border px-4 py-2">Name</th>
+                        <th class="border px-4 py-2">Email</th>
+                        <th class="border px-4 py-2">Phone Number</th>
+                        <th class="border px-4 py-2">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for driver in drivers %}
-                    <tr class="border-b hover:bg-gray-100">
-                        <td class="py-3 px-4">
-                            <input type="checkbox" name="selected_drivers" value="{{ driver.id }}">
+                    <tr>
+                        <td class="border px-4 py-2 text-center">
+                            <input type="checkbox" name="selected_driver" value="{{ driver.id }}" class="driver-checkbox">
                         </td>
-                        <td class="py-3 px-4">{{ driver.name }}</td>
-                        <td class="py-3 px-4">{{ driver.surname }}</td>
-                        <td class="py-3 px-4">{{ driver.email }}</td>
-                        <td class="py-3 px-4">{{ driver.phone_number }}</td>
+                        <td class="border px-4 py-2">{{ driver.name }} {{ driver.surname }}</td>
+                        <td class="border px-4 py-2">{{ driver.email }}</td>
+                        <td class="border px-4 py-2">{{ driver.phone_number }}</td>
+                        <td class="border px-4 py-2 text-center">
+                            <button type="button" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+                                    onclick="openModifyModal({{ driver.id }}, '{{ driver.email }}', '{{ driver.phone_number }}')">
+                                Modify
+                            </button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-
             <!-- Delete Button -->
-            <div class="mt-6 flex justify-end">
-                <button type="button" onclick="deleteSelectedDrivers()" 
-                        class="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600">
+            <div class="mt-4 text-right">
+                <button type="submit" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600">
                     Delete Selected
                 </button>
             </div>
         </form>
     </div>
 
-    <!-- JavaScript for Handling Selection and Deletion -->
+    <!-- Modify Modal -->
+    <div id="modifyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-md">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Modify Driver</h2>
+            <form id="modifyDriverForm">
+                <input type="hidden" id="modifyDriverId">
+
+                <!-- Email -->
+                <div class="mb-4">
+                    <label for="modifyEmail" class="block text-gray-700 font-medium">Email</label>
+                    <input type="email" id="modifyEmail" class="w-full p-2 border rounded" required>
+                </div>
+
+                <!-- Phone Number -->
+                <div class="mb-4">
+                    <label for="modifyPhoneNumber" class="block text-gray-700 font-medium">Phone Number</label>
+                    <input type="text" id="modifyPhoneNumber" class="w-full p-2 border rounded" required>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex justify-between">
+                    <button type="button" onclick="closeModifyModal()"
+                            class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                        Cancel
+                    </button>
+                    <button type="button" onclick="submitModifyDriver()"
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
     <script>
-        // Toggle Select All Checkboxes
-        function toggleSelectAll() {
-            const checkboxes = document.querySelectorAll('input[name="selected_drivers"]');
-            const selectAllCheckbox = document.getElementById('selectAll');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = selectAllCheckbox.checked;
-            });
+        // Open Modify Modal
+        function openModifyModal(driverId, email, phoneNumber) {
+            const selectedCheckboxes = document.querySelectorAll('.driver-checkbox:checked');
+            if (selectedCheckboxes.length > 1) {
+                alert("Please select only one driver to modify.");
+                return;
+            }
+
+            document.getElementById('modifyDriverId').value = driverId;
+            document.getElementById('modifyEmail').value = email;
+            document.getElementById('modifyPhoneNumber').value = phoneNumber;
+
+            document.getElementById('modifyModal').classList.remove('hidden');
         }
 
-        // Delete Selected Drivers
-        async function deleteSelectedDrivers() {
-            const checkboxes = document.querySelectorAll('input[name="selected_drivers"]:checked');
-            if (checkboxes.length === 0) {
-                alert("Please select at least one driver to delete.");
+        // Close Modify Modal
+        function closeModifyModal() {
+            document.getElementById('modifyModal').classList.add('hidden');
+        }
+
+        // Submit Modified Driver Data
+        async function submitModifyDriver() {
+            const driverId = document.getElementById('modifyDriverId').value;
+            const email = document.getElementById('modifyEmail').value;
+            const phoneNumber = document.getElementById('modifyPhoneNumber').value;
+
+            if (!email || !phoneNumber) {
+                alert("Both email and phone number are required.");
                 return;
             }
 
-            // Collect selected driver IDs
-            const selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value);
-
-            // Confirm before deleting
-            if (!confirm(`Are you sure you want to delete ${selectedIds.length} driver(s)?`)) {
-                return;
-            }
-
-            // Send DELETE request to the server
-            const response = await fetch('{% url "delete_drivers" %}', {
-                method: 'POST',
+            const response = await fetch(`/drivers/modify/${driverId}/`, {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}',
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
                 },
-                body: JSON.stringify({ ids: selectedIds })
+                body: JSON.stringify({ email, phone_number: phoneNumber })
             });
 
             if (response.ok) {
-                alert("Selected drivers were successfully deleted.");
-                window.location.reload();
+                alert("Driver updated successfully!");
+                location.reload();
             } else {
-                alert("An error occurred. Please try again.");
+                alert("An error occurred while updating the driver.");
             }
         }
     </script>

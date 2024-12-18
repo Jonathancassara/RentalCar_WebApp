@@ -26,26 +26,32 @@ def list_rentals(request):
 
 def add_rental(request):
     """
-    Handles adding a new rental.
+    Adds a new rental with validation and a confirmation modal.
     """
     if request.method == 'POST':
-        data = request.POST
+        # Parse data from request
+        data = json.loads(request.body)
         car_id = data.get('car_id')
         driver_id = data.get('driver_id')
         rent_date = data.get('rent_date')
-        return_date = data.get('return_date')
-        comments = data.get('comments', '')
 
+        # Save rental in the database
         Rental.objects.create(
             car_id=car_id,
             driver_id=driver_id,
-            rent_date=rent_date,
-            return_date=return_date,
-            comments=comments
+            rent_date=rent_date
         )
-        return redirect('list_rentals')
+        return JsonResponse({'success': True})
 
-    return render(request, 'add_rental.html')
+    # Get drivers and available cars for the form
+    drivers = Driver.objects.all()
+    rented_car_ids = Rental.objects.filter(return_date__isnull=True).values_list('car_id', flat=True)
+    available_cars = Car.objects.exclude(id__in=rented_car_ids)
+
+    return render(request, 'add_rental.html', {
+        'drivers': drivers,
+        'available_cars': available_cars
+    })
 
 def update_rental(request, pk):
     """

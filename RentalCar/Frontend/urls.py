@@ -11,7 +11,7 @@ urlpatterns = [
     # Rentals
     path('rentals/', rentals, name='rentals'),
     #path('rentals/', list_rentals, name='list_rentals'),
-    path('rentals/add/', add_rental, name='add_rental'),
+    path('rentals/add/', add_rental, name='add_rental'),  # Add Rental Page
     path('rentals/update/<int:pk>/', update_rental, name='update_rental'),
     path('rentals/delete/<int:pk>/', delete_rental, name='delete_rental'),
 

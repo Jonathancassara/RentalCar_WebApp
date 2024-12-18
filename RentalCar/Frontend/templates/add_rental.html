@@ -1,16 +1,141 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add a Rental</title>
+    <title>Add Rental</title>
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
 </head>
-<body>
-    <h1>Add a Rental</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Add Rental</button>
-    </form>
+<body class="bg-gray-200 min-h-screen flex flex-col items-center p-4">
+
+    <!-- Page Title -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Add Rental</h1>
+    </div>
+
+    <!-- Rental Form -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl mt-4">
+        <form id="addRentalForm">
+            <!-- Driver Selection -->
+            <div class="mb-4">
+                <label for="driver" class="block text-gray-700 font-medium">Driver</label>
+                <select id="driver" name="driver" class="w-full p-2 border rounded">
+                    <option value="">Select a driver</option>
+                    {% for driver in drivers %}
+                    <option value="{{ driver.id }}">{{ driver.name }} {{ driver.surname }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Car Selection -->
+            <div class="mb-4">
+                <label for="car" class="block text-gray-700 font-medium">Car</label>
+                <select id="car" name="car" class="w-full p-2 border rounded">
+                    <option value="">Select a car</option>
+                    {% for car in available_cars %}
+                    <option value="{{ car.id }}">{{ car.make }} {{ car.model }} ({{ car.registration_number }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Rent Date -->
+            <div class="mb-4">
+                <label for="rent_date" class="block text-gray-700 font-medium">Rent Date</label>
+                <input type="date" id="rent_date" name="rent_date" class="w-full p-2 border rounded">
+            </div>
+
+            <!-- Submit Button -->
+            <button type="button" onclick="openConfirmationModal()"
+                    class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition">
+                Add Rental
+            </button>
+        </form>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-md text-center">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Confirm Rental</h2>
+            <p class="text-gray-600 mb-2"><strong>Driver:</strong> <span id="modalDriver"></span></p>
+            <p class="text-gray-600 mb-2"><strong>Car:</strong> <span id="modalCar"></span></p>
+            <p class="text-gray-600 mb-6"><strong>Rent Date:</strong> <span id="modalRentDate"></span></p>
+            <div class="flex justify-center space-x-4">
+                <button onclick="closeConfirmationModal()"
+                        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    Edit
+                </button>
+                <button onclick="submitRental()"
+                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Validate
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-md text-center">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Rental Added Successfully</h2>
+            <button onclick="goToHomePage()"
+                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                OK
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Open Confirmation Modal
+        function openConfirmationModal() {
+            const driver = document.getElementById('driver');
+            const car = document.getElementById('car');
+            const rentDate = document.getElementById('rent_date');
+
+            if (!driver.value || !car.value || !rentDate.value) {
+                alert("All fields are required!");
+                return;
+            }
+
+            document.getElementById('modalDriver').textContent = driver.options[driver.selectedIndex].text;
+            document.getElementById('modalCar').textContent = car.options[car.selectedIndex].text;
+            document.getElementById('modalRentDate').textContent = rentDate.value;
+
+            document.getElementById('confirmationModal').classList.remove('hidden');
+        }
+
+        // Close Confirmation Modal
+        function closeConfirmationModal() {
+            document.getElementById('confirmationModal').classList.add('hidden');
+        }
+
+        // Submit Rental
+        async function submitRental() {
+            const driver = document.getElementById('driver').value;
+            const car = document.getElementById('car').value;
+            const rentDate = document.getElementById('rent_date').value;
+
+            const response = await fetch("{% url 'add_rental' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({ driver_id: driver, car_id: car, rent_date: rentDate })
+            });
+
+            if (response.ok) {
+                document.getElementById('confirmationModal').classList.add('hidden');
+                document.getElementById('successModal').classList.remove('hidden');
+            } else {
+                alert("An error occurred. Please try again.");
+            }
+        }
+
+        // Redirect to Home Page
+        function goToHomePage() {
+            window.location.href = "{% url 'index' %}";
+        }
+    </script>
 </body>
 </html>

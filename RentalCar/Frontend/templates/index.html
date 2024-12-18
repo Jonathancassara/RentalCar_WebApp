@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RentalCar</title>
+    <!-- Tailwind CSS -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-gray-100 via-gray-300 to-gray-200 min-h-screen flex items-center justify-center">
+
+    <!-- Main Container -->
+    <div class="glassmorphism bg-white/30 backdrop-blur-lg rounded-3xl shadow-lg p-8 w-80 flex flex-col items-center">
+        <!-- Title -->
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">RentalCar</h1>
+        
+        <!-- Buttons -->
+        <div class="flex flex-col w-full space-y-4">
+            <!-- Rent a Car Button -->
+            <a href="#" class="claymorphic-button bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full shadow-md text-lg font-medium hover:scale-105 transition text-center">
+                Rent a Car
+            </a>
+            
+            <!-- Return the Car Button -->
+            <a href="#" class="claymorphic-button bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-full shadow-md text-lg font-medium hover:scale-105 transition text-center">
+                Return the Car
+            </a>
+        </div>
+    </div>
+
+    <!-- Script for Tailwind -->
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

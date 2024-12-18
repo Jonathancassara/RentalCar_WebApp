@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finish Rental</title>
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body class="bg-gray-200 min-h-screen flex flex-col items-center p-4">
+
+    <!-- Page Header -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Finish Rentals</h1>
+    </div>
+
+    <!-- Rentals Table -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl mt-4">
+        <form method="POST">
+            {% csrf_token %}
+            <table class="table-auto w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border px-4 py-2">Select</th>
+                        <th class="border px-4 py-2">Driver</th>
+                        <th class="border px-4 py-2">Car</th>
+                        <th class="border px-4 py-2">Rent Date</th>
+                        <th class="border px-4 py-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rental in rentals %}
+                    <tr>
+                        <td class="border px-4 py-2 text-center">
+                            <input type="radio" name="rental_id" value="{{ rental.id }}" required>
+                        </td>
+                        <td class="border px-4 py-2">{{ rental.driver.name }} {{ rental.driver.surname }}</td>
+                        <td class="border px-4 py-2">{{ rental.car.license_plate }}</td>
+                        <td class="border px-4 py-2">{{ rental.rent_date }}</td>
+                        <td class="border px-4 py-2 text-center">
+                            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                Finish
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </form>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-8 text-center text-gray-600">
+        <p>&copy; 2024 RentalCar Management. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

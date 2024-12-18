@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remove Cars</title>
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body class="bg-gray-200 min-h-screen flex flex-col items-center p-4">
+
+    <!-- Page Title -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Remove Cars</h1>
+    </div>
+
+    <!-- Cars Table -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl mt-4">
+        <form id="removeCarsForm">
+            <table class="w-full border-collapse text-left">
+                <thead>
+                    <tr class="bg-gray-100 border-b">
+                        <th class="py-3 px-4 text-center">
+                            <input type="checkbox" id="selectAll" onclick="toggleSelectAll()" class="cursor-pointer">
+                        </th>
+                        <th class="py-3 px-4">Make</th>
+                        <th class="py-3 px-4">Model</th>
+                        <th class="py-3 px-4">Registration Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for car in cars %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="py-3 px-4 text-center">
+                            <input type="checkbox" name="selected_cars" value="{{ car.id }}" class="cursor-pointer">
+                        </td>
+                        <td class="py-3 px-4">{{ car.make }}</td>
+                        <td class="py-3 px-4">{{ car.model }}</td>
+                        <td class="py-3 px-4">{{ car.registration_number }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-4 text-center text-gray-500">No cars available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Delete Button -->
+            <div class="mt-6 flex justify-end">
+                <button type="button" onclick="openConfirmationModal()"
+                        class="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 transition cursor-pointer">
+                    Remove Selected Cars
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-md text-center">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Confirm Deletion</h2>
+            <p class="text-gray-600 mb-6">Are you sure you want to delete the selected cars?</p>
+            <div class="flex justify-center space-x-4">
+                <button onclick="closeConfirmationModal()"
+                        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 cursor-pointer">
+                    Cancel
+                </button>
+                <button onclick="deleteSelectedCars()"
+                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 cursor-pointer">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Select All functionality
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('input[name="selected_cars"]');
+            const selectAllCheckbox = document.getElementById('selectAll');
+            checkboxes.forEach(checkbox => checkbox.checked = selectAllCheckbox.checked);
+        }
+
+        // Open Confirmation Modal
+        function openConfirmationModal() {
+            const selected = document.querySelectorAll('input[name="selected_cars"]:checked');
+            if (selected.length === 0) {
+                alert("Please select at least one car to remove.");
+                return;
+            }
+            document.getElementById('confirmationModal').classList.remove('hidden');
+        }
+
+        // Close Confirmation Modal
+        function closeConfirmationModal() {
+            document.getElementById('confirmationModal').classList.add('hidden');
+        }
+
+        // Delete Selected Cars
+        async function deleteSelectedCars() {
+            const checkboxes = document.querySelectorAll('input[name="selected_cars"]:checked');
+            const ids = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+            const response = await fetch("{% url 'delete_cars' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({ ids: ids })
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert("An error occurred while deleting cars. Please try again.");
+            }
+            closeConfirmationModal();
+        }
+    </script>
+</body>
+</html>

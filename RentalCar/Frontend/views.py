@@ -1,95 +1,138 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Rental, Driver, Car
-from .forms import RentalForm, RentalUpdateForm
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
+from .models import Car, Driver, Rental
 import json
 
-# View: Home Page
+# ------------------------- Home Page ------------------------- #
 def index(request):
+    """
+    Renders the home page.
+    """
     return render(request, 'index.html')
 
-# View: List of Rentals
+# ------------------------- Rentals ------------------------- #
+def rentals(request):
+    """
+    Renders the Rentals management page.
+    """
+    return render(request, 'rentals.html')
+
 def list_rentals(request):
-    rentals = Rental.objects.all()
+    """
+    Renders the rental list page with all rentals.
+    """
+    rentals = Rental.objects.select_related('car', 'driver')
     return render(request, 'list_rentals.html', {'rentals': rentals})
 
-# View: Add a New Rental
 def add_rental(request):
+    """
+    Handles adding a new rental.
+    """
     if request.method == 'POST':
-        form = RentalForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('list_rentals')
-    else:
-        form = RentalForm()
-    return render(request, 'add_rental.html', {'form': form})
+        data = request.POST
+        car_id = data.get('car_id')
+        driver_id = data.get('driver_id')
+        rent_date = data.get('rent_date')
+        return_date = data.get('return_date')
+        comments = data.get('comments', '')
 
-# View: Update a Rental
-def update_rental(request, pk):
-    rental = get_object_or_404(Rental, pk=pk)
-    if request.method == 'POST':
-        form = RentalUpdateForm(request.POST, instance=rental)
-        if form.is_valid():
-            form.save()
-            return redirect('list_rentals')
-    else:
-        form = RentalUpdateForm(instance=rental)
-    return render(request, 'update_rental.html', {'form': form, 'rental': rental})
-
-# View: Delete a Rental
-def delete_rental(request, pk):
-    rental = get_object_or_404(Rental, pk=pk)
-    if request.method == 'POST':
-        rental.delete()
+        Rental.objects.create(
+            car_id=car_id,
+            driver_id=driver_id,
+            rent_date=rent_date,
+            return_date=return_date,
+            comments=comments
+        )
         return redirect('list_rentals')
-    return render(request, 'delete_rental.html', {'rental': rental})
 
-# View: Home Page
-def index(request):
-    return render(request, 'index.html')
+    return render(request, 'add_rental.html')
 
-# View: Drivers Page
+def update_rental(request, pk):
+    """
+    Updates a rental record.
+    """
+    rental = get_object_or_404(Rental, pk=pk)
+    if request.method == 'POST':
+        rental.car_id = request.POST.get('car_id')
+        rental.driver_id = request.POST.get('driver_id')
+        rental.rent_date = request.POST.get('rent_date')
+        rental.return_date = request.POST.get('return_date')
+        rental.comments = request.POST.get('comments', '')
+        rental.save()
+        return redirect('list_rentals')
+    return render(request, 'update_rental.html', {'rental': rental})
+
+def delete_rental(request, pk):
+    """
+    Deletes a rental record.
+    """
+    rental = get_object_or_404(Rental, pk=pk)
+    rental.delete()
+    return redirect('list_rentals')
+
+# ------------------------- Drivers ------------------------- #
 def drivers(request):
+    """
+    Renders the drivers management page.
+    """
     return render(request, 'drivers.html')
 
-def add_driver(request):
-    if request.method == 'POST':
-        name = request.POST['name']
-        surname = request.POST['surname']
-        email = request.POST['email']
-        phone = request.POST['phone']
-
-        # Create and save the new driver
-        Driver.objects.create(name=name, surname=surname, email=email, phone_number=phone)
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False}, status=400)
-
-# View to list all drivers
 def list_drivers(request):
+    """
+    Displays a list of drivers.
+    """
     drivers = Driver.objects.all()
     return render(request, 'list_drivers.html', {'drivers': drivers})
 
-# View to delete selected drivers
-def delete_drivers(request):
+def add_driver(request):
+    """
+    Adds a new driver with a POST request.
+    """
     if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            ids = data.get('ids', [])
-            Driver.objects.filter(id__in=ids).delete()
-            return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+        name = request.POST.get('name')
+        surname = request.POST.get('surname')
+        email = request.POST.get('email')
+        phone_number = request.POST.get('phone_number')
 
-# View: Rentals Page
-def rentals(request):
-    return render(request, 'rentals.html')
+        Driver.objects.create(
+            name=name,
+            surname=surname,
+            email=email,
+            phone_number=phone_number
+        )
+        return JsonResponse({'success': True})
+    return render(request, 'add_driver.html')
 
-# View: Cars Page
+def delete_drivers(request):
+    """
+    Deletes selected drivers based on IDs sent via JSON.
+    """
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        ids = data.get('ids', [])
+        Driver.objects.filter(id__in=ids).delete()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=405)
+
+# ------------------------- Cars ------------------------- #
 def cars(request):
+    """
+    Renders the cars management page.
+    """
     return render(request, 'cars.html')
 
+# List Cars View
+def list_cars(request):
+    """
+    Displays all cars in a simple table without delete functionality.
+    """
+    cars = Car.objects.all()
+    return render(request, 'list_cars.html', {'cars': cars})
+
 def add_car(request):
+    """
+    Adds a new car with a POST request.
+    """
     if request.method == 'POST':
         make = request.POST.get('make')
         model = request.POST.get('model')
@@ -103,14 +146,25 @@ def add_car(request):
         return JsonResponse({'success': True})
     return render(request, 'add_car.html')
 
-def list_cars(request):
+# Remove Cars View
+def remove_cars(request):
+    """
+    Displays cars with checkboxes and a delete button for removing cars.
+    """
     cars = Car.objects.all()
-    return render(request, 'list_cars.html', {'cars': cars})
+    return render(request, 'remove_cars.html', {'cars': cars})
 
+# Delete Cars API
 def delete_cars(request):
+    """
+    Deletes selected cars based on IDs sent via JSON.
+    """
     if request.method == 'POST':
-        data = json.loads(request.body)
-        ids = data.get('ids', [])
-        Car.objects.filter(id__in=ids).delete()
-        return JsonResponse({'success': True})
+        try:
+            data = json.loads(request.body)
+            ids = data.get('ids', [])
+            Car.objects.filter(id__in=ids).delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
     return JsonResponse({'success': False}, status=405)

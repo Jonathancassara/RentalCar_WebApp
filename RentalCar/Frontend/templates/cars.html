@@ -4,16 +4,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cars</title>
-    <!-- Link to Tailwind CSS -->
+    <title>Car Management</title>
+    <!-- Link Tailwind CSS -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 </head>
 <body class="bg-gray-200 min-h-screen flex items-center justify-center">
     <!-- Main Container -->
-    <div class="bg-white p-8 rounded-3xl shadow-lg">
+    <div class="bg-white p-8 rounded-3xl shadow-lg w-full max-w-md text-center">
         <!-- Title -->
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Cars</h1>
-        <p class="text-gray-600">Here, you can view, add, update, or delete car information.</p>
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Car Management</h1>
+
+        <!-- Buttons Section -->
+        <div class="space-y-4">
+            <!-- Add Car Button -->
+            <a href="{% url 'add_car' %}" class="block w-full bg-blue-500 text-white py-3 px-6 rounded-full shadow-md hover:bg-blue-600 transition-transform hover:scale-105">
+                Add a Car
+            </a>
+
+            <!-- List Cars Button -->
+            <a href="{% url 'list_cars' %}" class="block w-full bg-green-500 text-white py-3 px-6 rounded-full shadow-md hover:bg-green-600 transition-transform hover:scale-105">
+                List Cars
+            </a>
+
+            <!-- Remove Cars Button -->
+            <a href="{% url 'list_cars' %}" class="block w-full bg-red-500 text-white py-3 px-6 rounded-full shadow-md hover:bg-red-600 transition-transform hover:scale-105">
+                Remove Cars
+            </a>
+        </div>
     </div>
 </body>
 </html>

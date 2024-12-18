@@ -77,6 +77,48 @@ def delete_rental(request, pk):
     rental.delete()
     return redirect('list_rentals')
 
+def modify_rental(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        rental_id = data.get('rental_id')
+        driver_id = data.get('driver_id')
+        car_id = data.get('car_id')
+        rent_date = data.get('rent_date')
+        comments = data.get('comments')
+
+        try:
+            rental = Rental.objects.get(id=rental_id)
+            if driver_id:
+                rental.driver_id = driver_id
+            if car_id:
+                rental.car_id = car_id
+            if rent_date:
+                rental.rent_date = rent_date
+            if comments:
+                rental.comments = comments
+            rental.save()
+
+            return JsonResponse({'success': True})
+        except Rental.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Rental not found.'}, status=404)
+
+    rentals = Rental.objects.all()
+    return render(request, 'modify_rental.html', {'rentals': rentals})
+
+def finish_rental(request):
+    if request.method == 'POST':
+        rental_id = request.POST.get('rental_id')
+        try:
+            rental = get_object_or_404(Rental, id=rental_id)
+            rental.return_date = timezone.now()  # Assuming `return_date` marks the finish
+            rental.save()
+            return JsonResponse({'success': True})
+        except Rental.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Rental not found'}, status=404)
+
+    rentals = Rental.objects.filter(return_date__isnull=True)  # Only show ongoing rentals
+    return render(request, 'finish_rental.html', {'rentals': rentals})
+
 # ------------------------- Drivers ------------------------- #
 def drivers(request):
     """
@@ -125,16 +167,37 @@ def add_driver(request):
 
     return render(request, 'add_driver.html')
 
-def delete_drivers(request):
-    """
-    Deletes selected drivers based on IDs sent via JSON.
-    """
+def modify_driver(request, driver_id):
     if request.method == 'POST':
         data = json.loads(request.body)
-        ids = data.get('ids', [])
-        Driver.objects.filter(id__in=ids).delete()
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False}, status=405)
+        email = data.get('email')
+        phone_number = data.get('phone_number')
+
+        if not email or not phone_number:
+            return JsonResponse({'success': False, 'error': 'Email and phone number are required.'}, status=400)
+
+        try:
+            driver = Driver.objects.get(id=driver_id)
+            driver.email = email
+            driver.phone_number = phone_number
+            driver.save()
+            return JsonResponse({'success': True})
+        except Driver.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Driver not found.'}, status=404)
+
+def delete_drivers(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        driver_ids = data.get('driver_ids', [])
+        
+        if not driver_ids:
+            return JsonResponse({'success': False, 'error': 'No drivers selected for deletion.'}, status=400)
+
+        try:
+            Driver.objects.filter(id__in=driver_ids).delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 # ------------------------- Cars ------------------------- #
 def cars(request):

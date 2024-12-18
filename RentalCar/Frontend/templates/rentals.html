@@ -4,16 +4,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rentals</title>
-    <!-- Link to Tailwind CSS -->
+    <title>Manage Rentals</title>
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 </head>
-<body class="bg-gray-200 min-h-screen flex items-center justify-center">
-    <!-- Main Container -->
-    <div class="bg-white p-8 rounded-3xl shadow-lg">
-        <!-- Title -->
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Rentals</h1>
-        <p class="text-gray-600">Here, you can view, add, update, or delete rental records.</p>
+<body class="bg-gray-200 min-h-screen flex flex-col items-center p-4">
+
+    <!-- Page Header -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Manage Rentals</h1>
     </div>
+
+    <!-- Buttons Section -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl mt-4 text-center">
+        <p class="text-gray-700 font-medium mb-4">Choose an action to manage rentals:</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Add Rental Button -->
+            <a href="{% url 'add_rental' %}"
+               class="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600 transition shadow-md text-center">
+                Add Rental
+            </a>
+
+            <!-- Modify Rental Button -->
+            <a href="{% url 'modify_rental' %}"
+               class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition shadow-md text-center">
+                Modify Rental
+            </a>
+
+            <!-- Finish Rental Button -->
+            <a href="{% url 'finish_rental' %}"
+               class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 transition shadow-md text-center">
+                Finish Rental
+            </a>
+
+            <!-- List Rentals Button -->
+            <a href="{% url 'list_rentals' %}"
+               class="bg-gray-500 text-white px-6 py-3 rounded hover:bg-gray-600 transition shadow-md text-center">
+                List Rentals
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-8 text-center text-gray-600">
+        <p>&copy; 2024 RentalCar Management. All rights reserved.</p>
+    </footer>
+
 </body>
 </html>

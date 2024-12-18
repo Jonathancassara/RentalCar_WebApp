@@ -1,10 +1,12 @@
 module.exports = {
   content: [
-      './**/*.html', // Include all your HTML files
-      './Frontend/templates/**/*.html' // Adjust path for Django templates
+    "./templates/**/*.html",        // Templates racines
+    "./Frontend/templates/**/*.html", // Templates dans l'app Frontend
+    "./Frontend/static/**/*.css",   // CSS statique
+    "./**/*.html",                  // Parcourt tous les fichiers HTML
   ],
   theme: {
-      extend: {},
+    extend: {},
   },
   plugins: [],
-}
+};

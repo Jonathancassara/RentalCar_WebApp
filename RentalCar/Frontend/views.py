@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from .models import Car, Driver, Rental
 import json
+from django.utils.html import escape
 
 # ------------------------- Home Page ------------------------- #
 def index(request):
@@ -29,17 +30,17 @@ def add_rental(request):
     Adds a new rental with validation and a confirmation modal.
     """
     if request.method == 'POST':
-        # Parse data from request
         data = json.loads(request.body)
         car_id = data.get('car_id')
         driver_id = data.get('driver_id')
         rent_date = data.get('rent_date')
+        comments = escape(data.get('comments', '')[:500])  # Escape input and limit to DB max length
 
-        # Save rental in the database
         Rental.objects.create(
             car_id=car_id,
             driver_id=driver_id,
-            rent_date=rent_date
+            rent_date=rent_date,
+            comments=comments
         )
         return JsonResponse({'success': True})
 

@@ -20,11 +20,11 @@ class Driver(models.Model):
 
 
 class Rental(models.Model):
-    car = models.ForeignKey(Car, on_delete=models.CASCADE)
-    driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
-    rent_date = models.DateTimeField(auto_now_add=True)
-    return_date = models.DateTimeField(null=True, blank=True)
-    comments = models.TextField(null=True, blank=True)
+    car = models.ForeignKey('Car', on_delete=models.CASCADE)
+    driver = models.ForeignKey('Driver', on_delete=models.CASCADE)
+    rent_date = models.DateField()
+    return_date = models.DateField(null=True, blank=True)
+    comments = models.TextField(max_length=500, blank=True)  # Comment field
 
     def __str__(self):
-        return f"Rental: {self.car} by {self.driver}"
+        return f"{self.driver} rented {self.car} on {self.rent_date}"

@@ -45,6 +45,13 @@
                 <input type="date" id="rent_date" name="rent_date" class="w-full p-2 border rounded">
             </div>
 
+            <!-- Comments -->
+            <div class="mb-4">
+                <label for="comments" class="block text-gray-700 font-medium">Comments</label>
+                <textarea id="comments" name="comments" class="w-full p-2 border rounded" maxlength="500"
+                          placeholder="Add comments (max 500 characters)"></textarea>
+            </div>
+
             <!-- Submit Button -->
             <button type="button" onclick="openConfirmationModal()"
                     class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition">
@@ -59,7 +66,8 @@
             <h2 class="text-xl font-bold text-gray-800 mb-4">Confirm Rental</h2>
             <p class="text-gray-600 mb-2"><strong>Driver:</strong> <span id="modalDriver"></span></p>
             <p class="text-gray-600 mb-2"><strong>Car:</strong> <span id="modalCar"></span></p>
-            <p class="text-gray-600 mb-6"><strong>Rent Date:</strong> <span id="modalRentDate"></span></p>
+            <p class="text-gray-600 mb-2"><strong>Rent Date:</strong> <span id="modalRentDate"></span></p>
+            <p class="text-gray-600 mb-6"><strong>Comments:</strong> <span id="modalComments"></span></p>
             <div class="flex justify-center space-x-4">
                 <button onclick="closeConfirmationModal()"
                         class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
@@ -90,16 +98,18 @@
         function openConfirmationModal() {
             const driver = document.getElementById('driver');
             const car = document.getElementById('car');
-            const rentDate = document.getElementById('rent_date');
+            const rent_date = document.getElementById('rent_date');
+            const comments = document.getElementById('comments');
 
-            if (!driver.value || !car.value || !rentDate.value) {
+            if (!driver.value || !car.value || !rent_date.value) {
                 alert("All fields are required!");
                 return;
             }
 
             document.getElementById('modalDriver').textContent = driver.options[driver.selectedIndex].text;
             document.getElementById('modalCar').textContent = car.options[car.selectedIndex].text;
-            document.getElementById('modalRentDate').textContent = rentDate.value;
+            document.getElementById('modalRentDate').textContent = rent_date.value;
+            document.getElementById('modalComments').textContent = comments.value || "No comments";
 
             document.getElementById('confirmationModal').classList.remove('hidden');
         }
@@ -113,7 +123,8 @@
         async function submitRental() {
             const driver = document.getElementById('driver').value;
             const car = document.getElementById('car').value;
-            const rentDate = document.getElementById('rent_date').value;
+            const rent_date = document.getElementById('rent_date').value;
+            const comments = document.getElementById('comments').value;
 
             const response = await fetch("{% url 'add_rental' %}", {
                 method: "POST",
@@ -121,7 +132,7 @@
                     "Content-Type": "application/json",
                     "X-CSRFToken": "{{ csrf_token }}"
                 },
-                body: JSON.stringify({ driver_id: driver, car_id: car, rent_date: rentDate })
+                body: JSON.stringify({ driver_id: driver, car_id: car, rent_date: rent_date, comments: comments })
             });
 
             if (response.ok) {

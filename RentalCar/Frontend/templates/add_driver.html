@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Driver</title>
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body class="bg-gray-200 min-h-screen flex flex-col items-center p-4">
+
+    <!-- Page Title -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Add Driver</h1>
+    </div>
+
+    <!-- Driver Form -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl mt-4">
+        <form id="addDriverForm">
+            <!-- Name -->
+            <div class="mb-4">
+                <label for="name" class="block text-gray-700 font-medium">Name</label>
+                <input type="text" id="name" name="name" class="w-full p-2 border rounded" placeholder="Enter name" required>
+            </div>
+
+            <!-- Surname -->
+            <div class="mb-4">
+                <label for="surname" class="block text-gray-700 font-medium">Surname</label>
+                <input type="text" id="surname" name="surname" class="w-full p-2 border rounded" placeholder="Enter surname" required>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700 font-medium">Email</label>
+                <input type="email" id="email" name="email" class="w-full p-2 border rounded" placeholder="Enter email" required>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="mb-4">
+                <label for="phone_number" class="block text-gray-700 font-medium">Phone Number</label>
+                <input type="text" id="phone_number" name="phone_number" class="w-full p-2 border rounded" placeholder="Enter phone number" maxlength="50" required>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="button" onclick="validateForm()"
+                    class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition">
+                Add Driver
+            </button>
+        </form>
+    </div>
+
+    <!-- Phone Number Modal -->
+    <div id="phoneNumberModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-md text-center">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Phone Number Required</h2>
+            <p class="text-gray-600 mb-6">Please enter a valid phone number before submitting the form.</p>
+            <button onclick="closePhoneNumberModal()"
+                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                OK
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        function validateForm() {
+            const phoneNumber = document.getElementById('phone_number').value.trim();
+
+            if (!phoneNumber) {
+                // Open modal if phone number is empty
+                document.getElementById('phoneNumberModal').classList.remove('hidden');
+                return;
+            }
+
+            // Submit form if validation passes
+            submitDriverForm();
+        }
+
+        function closePhoneNumberModal() {
+            // Close the modal
+            document.getElementById('phoneNumberModal').classList.add('hidden');
+        }
+
+        async function submitDriverForm() {
+            const name = document.getElementById('name').value;
+            const surname = document.getElementById('surname').value;
+            const email = document.getElementById('email').value;
+            const phone_number = document.getElementById('phone_number').value;
+
+            const response = await fetch("{% url 'add_driver' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({ name, surname, email, phone_number })
+            });
+
+            if (response.ok) {
+                alert("Driver added successfully!");
+                window.location.href = "{% url 'drivers' %}";
+            } else {
+                const error = await response.json();
+                alert(error.error || "An error occurred. Please try again.");
+            }
+        }
+    </script>
+
+</body>
+</html>

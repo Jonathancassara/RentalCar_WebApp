@@ -17,9 +17,9 @@ urlpatterns = [
 
     # Drivers
     path('drivers/', drivers, name='drivers'),
-    path('drivers/list/', list_drivers, name='list_drivers'),
-    path('drivers/add/', add_driver, name='add_driver'),
-    path('drivers/delete/', delete_drivers, name='delete_drivers'),
+     path('drivers/add/', add_driver, name='add_driver'),  # Add Driver Page
+    path('drivers/list/', list_drivers, name='list_drivers'),  # List Drivers Page
+    #path('drivers/remove/', delete_drivers, name='delete_drivers'),  # Remove Drivers Page
 
     # Cars
     path('cars/', cars, name='cars'),

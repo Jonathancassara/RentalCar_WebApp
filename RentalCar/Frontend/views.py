@@ -93,21 +93,36 @@ def list_drivers(request):
 
 def add_driver(request):
     """
-    Adds a new driver with a POST request.
+    Adds a new driver with validation for required fields.
     """
     if request.method == 'POST':
-        name = request.POST.get('name')
-        surname = request.POST.get('surname')
-        email = request.POST.get('email')
-        phone_number = request.POST.get('phone_number')
+        # Parse data from the request
+        data = json.loads(request.body)
+        name = data.get('name', '').strip()
+        surname = data.get('surname', '').strip()
+        email = data.get('email', '').strip()
+        phone_number = data.get('phone_number', '').strip()
 
+        # Validate required fields
+        if not name or not surname or not email or not phone_number:
+            return JsonResponse({'success': False, 'error': 'All fields are required!'}, status=400)
+
+        # Escape inputs to prevent XSS
+        name = escape(name)
+        surname = escape(surname)
+        email = escape(email)
+        phone_number = escape(phone_number)
+
+        # Save the driver to the database
         Driver.objects.create(
             name=name,
             surname=surname,
             email=email,
             phone_number=phone_number
         )
+
         return JsonResponse({'success': True})
+
     return render(request, 'add_driver.html')
 
 def delete_drivers(request):

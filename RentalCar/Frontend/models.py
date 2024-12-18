@@ -12,8 +12,8 @@ class Car(models.Model):
 class Driver(models.Model):
     name = models.CharField(max_length=50)
     surname = models.CharField(max_length=50)
-    email = models.EmailField(max_length=100)
-    phone_number = models.CharField(max_length=50)
+    email = models.EmailField(unique=True, max_length=100)
+    phone_number = models.CharField(max_length=50, null=False, blank=False, default="Unknown")  # Ensure NOT NULL, max 50 chars # Default value
 
     def __str__(self):
         return f"{self.name} {self.surname}"
@@ -24,7 +24,7 @@ class Rental(models.Model):
     driver = models.ForeignKey('Driver', on_delete=models.CASCADE)
     rent_date = models.DateField()
     return_date = models.DateField(null=True, blank=True)
-    comments = models.TextField(max_length=500, blank=True)  # Comment field
+    comments = models.TextField(max_length=500, blank=True, default="No comments provided")  # Default value added
 
     def __str__(self):
         return f"{self.driver} rented {self.car} on {self.rent_date}"

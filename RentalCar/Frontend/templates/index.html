@@ -4,26 +4,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RentalCar</title>
+    <title>RentalCar - Home</title>
+    <!-- Link to Tailwind CSS -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 </head>
 <body class="bg-gray-200 min-h-screen flex items-center justify-center">
-
+    <!-- Main Container -->
     <div class="bg-white p-8 rounded-3xl shadow-lg">
-        <h1 class="text-4xl font-bold text-gray-800 mb-6">RentalCar</h1>
-
+        <!-- Title -->
+        <h1 class="text-4xl font-bold text-gray-800 mb-6">RentalCar Management</h1>
+        
+        <!-- Navigation Buttons -->
         <div class="flex flex-col space-y-4">
-            <a href="{% url 'add_rental' %}" class="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600">
-                Rent a Car
+            <!-- Drivers Button -->
+            <a href="{% url 'drivers' %}" 
+               class="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600 text-center shadow-md">
+                Manage Drivers
             </a>
-            <a href="{% url 'update_rental' pk=1 %}" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600">
-                Return a Car
+            <!-- Rentals Button -->
+            <a href="{% url 'rentals' %}" 
+               class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 text-center shadow-md">
+                Manage Rentals
             </a>
-            <a href="{% url 'list_rentals' %}" class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600">
-                View Rentals
-            </a>
-            <a href="{% url 'delete_rental' pk=1 %}" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600">
-                Delete a Rental
+            <!-- Cars Button -->
+            <a href="{% url 'cars' %}" 
+               class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 text-center shadow-md">
+                Manage Cars
             </a>
         </div>
     </div>

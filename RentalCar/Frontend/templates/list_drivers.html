@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List of Drivers</title>
+    <!-- Tailwind CSS -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body class="bg-gray-200 min-h-screen flex flex-col items-center p-4">
+    <!-- Title Section -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Driver Management</h1>
+    </div>
+
+    <!-- Driver List Table -->
+    <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl">
+        <form id="deleteDriversForm">
+            <!-- Table -->
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b">
+                        <th class="py-3 px-4"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
+                        <th class="py-3 px-4">First Name</th>
+                        <th class="py-3 px-4">Last Name</th>
+                        <th class="py-3 px-4">Email</th>
+                        <th class="py-3 px-4">Phone Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for driver in drivers %}
+                    <tr class="border-b hover:bg-gray-100">
+                        <td class="py-3 px-4">
+                            <input type="checkbox" name="selected_drivers" value="{{ driver.id }}">
+                        </td>
+                        <td class="py-3 px-4">{{ driver.name }}</td>
+                        <td class="py-3 px-4">{{ driver.surname }}</td>
+                        <td class="py-3 px-4">{{ driver.email }}</td>
+                        <td class="py-3 px-4">{{ driver.phone_number }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Delete Button -->
+            <div class="mt-6 flex justify-end">
+                <button type="button" onclick="deleteSelectedDrivers()" 
+                        class="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600">
+                    Delete Selected
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- JavaScript for Handling Selection and Deletion -->
+    <script>
+        // Toggle Select All Checkboxes
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('input[name="selected_drivers"]');
+            const selectAllCheckbox = document.getElementById('selectAll');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+        }
+
+        // Delete Selected Drivers
+        async function deleteSelectedDrivers() {
+            const checkboxes = document.querySelectorAll('input[name="selected_drivers"]:checked');
+            if (checkboxes.length === 0) {
+                alert("Please select at least one driver to delete.");
+                return;
+            }
+
+            // Collect selected driver IDs
+            const selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+            // Confirm before deleting
+            if (!confirm(`Are you sure you want to delete ${selectedIds.length} driver(s)?`)) {
+                return;
+            }
+
+            // Send DELETE request to the server
+            const response = await fetch('{% url "delete_drivers" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({ ids: selectedIds })
+            });
+
+            if (response.ok) {
+                alert("Selected drivers were successfully deleted.");
+                window.location.reload();
+            } else {
+                alert("An error occurred. Please try again.");
+            }
+        }
+    </script>
+</body>
+</html>

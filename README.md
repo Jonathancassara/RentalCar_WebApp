@@ -10,7 +10,7 @@ To deploy this project run
 
 ```bash
   STEP BY STEP
-```
+
 Install Python 3.12 (test 3.13 ok)
 # Créez un environnement virtuel
 python -m venv venv
@@ -36,7 +36,7 @@ CREATE DATABASE RentalCarDB;
 python manage.py migrate
 
 python manage.py runserver
-
+```
 
 ## Authors
 

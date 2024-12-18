@@ -76,9 +76,21 @@ WSGI_APPLICATION = 'RentalCar.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
+    #'default': {
+    #    'ENGINE': 'django.db.backends.sqlite3',
+    #    'NAME': BASE_DIR / 'db.sqlite3',
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        #'ENGINE': 'django_mssql_backend',  # Use the django-mssql-backend engine
+        'ENGINE': 'mssql',
+        'NAME': 'RentalCarDB',            # Database name
+        'HOST': 'localhost',              # Server address
+        'PORT': '',                       # Default SQL Server port (leave blank for default)
+        'USER': '',                       # Leave empty for Windows Authentication
+        'PASSWORD': '',                   # Leave empty for Windows Authentication
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',  # Ensure this matches your installed ODBC driver
+            'trusted_connection': 'yes',               # Enable Windows Authentication
+        },
     }
 }
 

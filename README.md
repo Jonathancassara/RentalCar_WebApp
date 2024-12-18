@@ -42,3 +42,46 @@ python manage.py runserver
 
 - [@jonathancassara](https://www.github.com/jonathancassara)
 
+## TODO
+
+- TimeZone ( retour voiture )
+- check phone number / email si deja dans la DB 
+- check if customers are already in DB 
+- ajoute commentaire ( option none )  
+- check format email 
+-  Ajoute pied page Footer
+- ajouter Header 
+
+bug : 
+Driver: 
+Add  : 
+- probleme modal , no pop up 
+List : 
+- colonne  Surname !  
+- fix remove dont work ! 
+
+rentals : 
+Add
+-date rent :  no past !  TODAY  ,  pas + 7 jours ; attention si weekend !  
+Modify :
+-not working ! 
+Finish :
+-  modal comments or none quand user finish !   
+-finish not working 
+-visual  no car ??? 
+-comment no  visible 
+List :
+-design !
+-update ????  
+-delete with modal confirmation !!!! 
+
+Car:
+remove :
+liste avec modification  et delete 
+modal de confirmation
+
+
+
+
+
+

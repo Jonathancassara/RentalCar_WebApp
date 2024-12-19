@@ -44,7 +44,7 @@ python manage.py runserver
 
 ## TODO
 
-- TimeZone ( retour voiture )
+- TimeZone UTC
 - check phone number / email si deja dans la DB 
 - check if customers are already in DB 
 - ajoute commentaire ( option none )  

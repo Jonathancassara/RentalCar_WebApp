@@ -1,8 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
-from .models import Car, Driver, Rental
-import json
 from django.utils.html import escape
+from .models import Car, Driver, Rental
+from django.utils.timezone import now
+from django.utils import timezone
+import json
+
+
 
 # ------------------------- Home Page ------------------------- #
 def index(request):
@@ -27,32 +31,38 @@ def list_rentals(request):
 
 def add_rental(request):
     """
-    Adds a new rental with validation and a confirmation modal.
+    Handles the addition of a new rental record.
     """
     if request.method == 'POST':
         data = json.loads(request.body)
         car_id = data.get('car_id')
         driver_id = data.get('driver_id')
-        rent_date = data.get('rent_date')
-        comments = escape(data.get('comments', '')[:500])  # Escape input and limit to DB max length
+        rent_date = data.get('rent_date', now())  # Default to current date and time
+        comments = data.get('comments', '')
 
-        Rental.objects.create(
+        # Create a new rental record
+        rental = Rental.objects.create(
             car_id=car_id,
             driver_id=driver_id,
             rent_date=rent_date,
             comments=comments
         )
-        return JsonResponse({'success': True})
 
-    # Get drivers and available cars for the form
+        return JsonResponse({'success': True, 'rental_id': rental.id})
+
+    # For GET requests, display the available drivers and cars
     drivers = Driver.objects.all()
-    rented_car_ids = Rental.objects.filter(return_date__isnull=True).values_list('car_id', flat=True)
-    available_cars = Car.objects.exclude(id__in=rented_car_ids)
+    cars = Car.objects.filter(rentals__isnull=True)  # Cars that are not currently rented
+
+    # Pass the current date and time to the template
+    default_rent_date = now().strftime('%Y-%m-%dT%H:%M')  # Format for HTML datetime-local input
 
     return render(request, 'add_rental.html', {
         'drivers': drivers,
-        'available_cars': available_cars
+        'cars': cars,
+        'default_rent_date': default_rent_date,
     })
+
 
 def update_rental(request, pk):
     """
@@ -106,18 +116,36 @@ def modify_rental(request):
     return render(request, 'modify_rental.html', {'rentals': rentals})
 
 def finish_rental(request):
-    if request.method == 'POST':
-        rental_id = request.POST.get('rental_id')
-        try:
-            rental = get_object_or_404(Rental, id=rental_id)
-            rental.return_date = timezone.now()  # Assuming `return_date` marks the finish
-            rental.save()
-            return JsonResponse({'success': True})
-        except Rental.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Rental not found'}, status=404)
+    """
+    Displays ongoing rentals and handles the finish process for a rental.
+    """
+    if request.method == "GET":
+        # Retrieve all ongoing rentals (no return date yet)
+        rentals = Rental.objects.filter(return_date__isnull=True)
+        current_datetime = timezone.now()
+        return render(request, "finish_rental.html", {
+            "rentals": rentals,
+            "current_datetime": current_datetime,
+        })
 
-    rentals = Rental.objects.filter(return_date__isnull=True)  # Only show ongoing rentals
-    return render(request, 'finish_rental.html', {'rentals': rentals})
+    if request.method == "POST":
+        try:
+            # Parse data from the POST request
+            rental_id = request.POST.get("rental_id")
+            return_date = request.POST.get("return_date")
+            comments = request.POST.get("comments")
+
+            # Get the rental object or return a 404 error if not found
+            rental = get_object_or_404(Rental, id=rental_id)
+
+            # Update the return date and comments
+            rental.return_date = return_date or timezone.now()  # Default to the current datetime
+            rental.comments = comments
+            rental.save()
+
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
 
 # ------------------------- Drivers ------------------------- #
 def drivers(request):

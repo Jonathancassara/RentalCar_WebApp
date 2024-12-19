@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finish Rental</title>
+    <title>Finish Rentals</title>
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 </head>
 <body class="bg-gray-200 min-h-screen flex flex-col items-center p-4">
@@ -12,42 +12,117 @@
     <!-- Page Header -->
     <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl text-center">
         <h1 class="text-3xl font-bold text-gray-800 mb-4">Finish Rentals</h1>
+        <p class="text-gray-600">Manage ongoing rentals and finalize them when ready.</p>
     </div>
 
     <!-- Rentals Table -->
     <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-5xl mt-4">
-        <form method="POST">
-            {% csrf_token %}
-            <table class="table-auto w-full border-collapse">
-                <thead>
-                    <tr class="bg-gray-100">
-                        <th class="border px-4 py-2">Select</th>
-                        <th class="border px-4 py-2">Driver</th>
-                        <th class="border px-4 py-2">Car</th>
-                        <th class="border px-4 py-2">Rent Date</th>
-                        <th class="border px-4 py-2">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for rental in rentals %}
-                    <tr>
-                        <td class="border px-4 py-2 text-center">
-                            <input type="radio" name="rental_id" value="{{ rental.id }}" required>
-                        </td>
-                        <td class="border px-4 py-2">{{ rental.driver.name }} {{ rental.driver.surname }}</td>
-                        <td class="border px-4 py-2">{{ rental.car.license_plate }}</td>
-                        <td class="border px-4 py-2">{{ rental.rent_date }}</td>
-                        <td class="border px-4 py-2 text-center">
-                            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                                Finish
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </form>
+        <table class="table-auto w-full border-collapse border border-gray-300">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="border border-gray-300 px-4 py-2">Car</th>
+                    <th class="border border-gray-300 px-4 py-2">Driver</th>
+                    <th class="border border-gray-300 px-4 py-2">Rent Date</th>
+                    <th class="border border-gray-300 px-4 py-2">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rental in rentals %}
+                <tr class="bg-white hover:bg-gray-50">
+                    <td class="border border-gray-300 px-4 py-2">{{ rental.car.make }} {{ rental.car.model }}</td>
+                    <td class="border border-gray-300 px-4 py-2">{{ rental.driver.name }} {{ rental.driver.surname }}</td>
+                    <td class="border border-gray-300 px-4 py-2">{{ rental.rent_date }}</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center">
+                        <!-- Finish Button -->
+                        <button
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition shadow-md"
+                            onclick="openFinishModal({{ rental.id }}, '{{ rental.comments|default:'' }}')">
+                            Finish
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center text-gray-500 py-4">
+                        No ongoing rentals found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+
+    <!-- Finish Rental Modal -->
+    <div id="finishModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-xl font-bold mb-4">Finish Rental</h2>
+            <form id="finishForm">
+                <input type="hidden" id="rentalId" name="rental_id">
+                <div class="mb-4">
+                    <label for="returnDate" class="block text-sm font-medium text-gray-700">Return Date & Time</label>
+                    <input type="datetime-local" id="returnDate" name="return_date"
+                           class="w-full border border-gray-300 rounded px-3 py-2"
+                           value="{{ current_datetime|date:'Y-m-d\\TH:i' }}">
+                </div>
+                <div class="mb-4">
+                    <label for="comments" class="block text-sm font-medium text-gray-700">Comments</label>
+                    <textarea id="comments" name="comments" rows="3"
+                              class="w-full border border-gray-300 rounded px-3 py-2"></textarea>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" class="bg-gray-300 px-4 py-2 rounded" onclick="closeFinishModal()">Cancel</button>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Finish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        function openFinishModal(rentalId, comments) {
+            document.getElementById("finishModal").classList.remove("hidden");
+            document.getElementById("rentalId").value = rentalId;
+            document.getElementById("comments").value = comments;
+        }
+
+        function closeFinishModal() {
+            document.getElementById("finishModal").classList.add("hidden");
+        }
+
+        document.getElementById("finishForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const rentalId = document.getElementById("rentalId").value;
+            const returnDate = document.getElementById("returnDate").value;
+            const comments = document.getElementById("comments").value;
+
+            fetch("{% url 'finish_rental' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": "{{ csrf_token }}",
+                },
+                body: new URLSearchParams({
+                    rental_id: rentalId,
+                    return_date: returnDate,
+                    comments: comments,
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Rental finished successfully!");
+                        location.reload();
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error finishing rental:", error);
+                    alert("An error occurred. Please try again.");
+                });
+        });
+    </script>
 
     <!-- Footer -->
     <footer class="mt-8 text-center text-gray-600">
